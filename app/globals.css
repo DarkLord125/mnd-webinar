@@ -1,26 +1,187 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-navy: #023047;
+  --color-navy-2: #011f30;
+  --color-navy-3: #0a3a54;
+  --color-teal: #229fbd;
+  --color-amber: #ffb915;
+  --color-amber-hover: #ffc535;
+  --color-whatsapp: #25d366;
+  --color-whatsapp-dark: #1ebe5a;
+  --color-ink: #1a1f26;
+  --color-body: #444443;
+  --color-muted: #6b7280;
+  --color-page: #fafbfc;
+
+  --color-hairline: rgba(2, 48, 71, 0.08);
+  --color-hairline-strong: rgba(2, 48, 71, 0.14);
+
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --radius-brand-sm: 8px;
+  --radius-brand: 14px;
+  --radius-brand-lg: 20px;
+  --radius-brand-xl: 28px;
+
+  --shadow-brand-sm: 0 1px 2px rgba(2, 48, 71, 0.06), 0 1px 1px rgba(2, 48, 71, 0.04);
+  --shadow-brand-md: 0 10px 30px -12px rgba(2, 48, 71, 0.18), 0 4px 10px -4px rgba(2, 48, 71, 0.08);
+  --shadow-brand-lg: 0 30px 60px -24px rgba(2, 48, 71, 0.28), 0 12px 24px -12px rgba(2, 48, 71, 0.12);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fade-up entrance animation (hero) */
+.fade-up {
+  opacity: 0;
+  transform: translateY(18px);
+  animation: fadeUp 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+.fade-up.d1 { animation-delay: 0.08s; }
+.fade-up.d2 { animation-delay: 0.18s; }
+.fade-up.d3 { animation-delay: 0.28s; }
+.fade-up.d4 { animation-delay: 0.38s; }
+.fade-up.d5 { animation-delay: 0.48s; }
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Reveal-on-scroll */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Pulse dot on the live badge */
+.pulse-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  background: var(--color-amber);
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+.pulse-dot::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  background: var(--color-amber);
+  opacity: 0.6;
+  animation: pulse 1.6s ease-out infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(0.5); opacity: 0.7; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* Hero decorative layers */
+.hero-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(900px 500px at 85% 0%, rgba(34, 159, 189, 0.22), transparent 60%),
+    radial-gradient(700px 400px at 10% 100%, rgba(255, 185, 21, 0.1), transparent 60%);
+  pointer-events: none;
+}
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 40%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Bonus card glow */
+.bonus-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(500px 300px at 90% 10%, rgba(255, 185, 21, 0.18), transparent 60%),
+    radial-gradient(400px 300px at 0% 100%, rgba(34, 159, 189, 0.22), transparent 60%);
+  pointer-events: none;
+}
+
+/* Bonus perks bullet — masked check svg */
+.bonus-bullet::before {
+  content: "";
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  background: var(--color-amber);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='5 12 10 17 19 8'/></svg>") center / contain no-repeat;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='5 12 10 17 19 8'/></svg>") center / contain no-repeat;
+}
+
+/* Register card background glows */
+.register-glow {
+  background-image:
+    radial-gradient(600px 300px at 100% 0%, rgba(34, 159, 189, 0.25), transparent 60%),
+    radial-gradient(500px 300px at 0% 100%, rgba(255, 185, 21, 0.12), transparent 60%);
+}
+
+/* Quiz pulse-dot — box-shadow ring expanding outward */
+.quiz-pulse-dot {
+  animation: quizPulse 1.6s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(255, 185, 21, 0.55);
+}
+@keyframes quizPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 185, 21, 0.55); }
+  70%  { box-shadow: 0 0 0 8px rgba(255, 185, 21, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 185, 21, 0); }
+}
+
+/* Quiz nudge bounce */
+.quiz-nudge {
+  animation: quizNudge 1.6s ease-in-out infinite;
+}
+@keyframes quizNudge {
+  0%, 100% { transform: translate(0, -50%); }
+  50%      { transform: translate(4px, -50%); }
+}
+
+.ai-gallery {
+  scrollbar-width: none;
+}
+.ai-gallery::-webkit-scrollbar {
+  display: none;
+}
+
+/* FAQ accordion expand using grid-rows trick */
+.faq-answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.faq-answer.open {
+  grid-template-rows: 1fr;
+}
+.faq-answer > div {
+  overflow: hidden;
 }
