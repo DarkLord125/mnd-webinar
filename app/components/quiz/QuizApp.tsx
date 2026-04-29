@@ -9,6 +9,7 @@ import {
   type FormEvent,
   type ReactNode,
 } from "react";
+import useSWRMutation from "swr/mutation";
 
 const CORRECT_ANSWER: "A" | "B" = "A";
 const WHATSAPP_COMMUNITY_URL =
@@ -106,14 +107,67 @@ const ageOptions = [
   "Above 65",
 ];
 
+declare global {
+  interface Window {
+    Razorpay?: new (opts: RazorpayOptions) => { open: () => void };
+  }
+}
+
+type RazorpayOptions = {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description?: string;
+  order_id: string;
+  prefill?: { name?: string; email?: string; contact?: string };
+  theme?: { color?: string };
+  handler: (resp: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+  }) => void;
+  modal?: { ondismiss?: () => void };
+};
+
+async function postJson<T>(url: string, { arg }: { arg: unknown }): Promise<T> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(arg),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || `Request failed (${res.status})`);
+  }
+  return data as T;
+}
+
 export function QuizApp() {
   const [screen, setScreen] = useState<Screen>(1);
   const [lastResult, setLastResult] = useState<2 | 3>(2);
+  const [enteredViaDeepLink, setEnteredViaDeepLink] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("step") === "register") {
+      setScreen(4);
+      setEnteredViaDeepLink(true);
+    }
+  }, []);
 
   const goTo = (n: Screen) => {
     setScreen(n);
     if (n === 2 || n === 3) setLastResult(n);
     if (typeof window !== "undefined") window.scrollTo({ top: 0 });
+  };
+
+  const handleBackFromForm = () => {
+    if (enteredViaDeepLink) {
+      window.location.href = "/details";
+    } else {
+      goTo(lastResult);
+    }
   };
 
   return (
@@ -126,7 +180,7 @@ export function QuizApp() {
         )}
         {screen === 4 && (
           <ScreenRegister
-            onBack={() => goTo(lastResult)}
+            onBack={handleBackFromForm}
             onSuccess={() => goTo(5)}
           />
         )}
@@ -537,9 +591,32 @@ function ScreenRegister({
 }) {
   const [showError, setShowError] = useState(false);
   const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [pillSelections, setPillSelections] = useState<SelectedMap>(() =>
     Object.fromEntries(questions.map((q) => [q.id, new Set<string>()]))
   );
+
+  const { trigger: triggerRegister } = useSWRMutation<
+    { registrationId: string; paymentStatus: string },
+    Error,
+    "/api/register",
+    unknown
+  >("/api/register", postJson);
+
+  const { trigger: triggerCreateOrder } = useSWRMutation<
+    { orderId: string; amount: number; currency: string; keyId: string },
+    Error,
+    "/api/create-order",
+    unknown
+  >("/api/create-order", postJson);
+
+  const { trigger: triggerVerify } = useSWRMutation<
+    { status: "success" | "failed" },
+    Error,
+    "/api/verify-payment",
+    unknown
+  >("/api/verify-payment", postJson);
 
   const togglePill = (q: Question, value: string) => {
     setPillSelections((prev) => {
@@ -558,8 +635,9 @@ function ScreenRegister({
     setErrors((prev) => ({ ...prev, [q.id]: false }));
   };
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (submitting) return;
     const form = e.currentTarget;
     const data = new FormData(form);
     const newErrors: Record<string, boolean> = {};
@@ -570,10 +648,10 @@ function ScreenRegister({
     const email = (data.get("email") as string)?.trim() ?? "";
 
     if (!name) newErrors.name = true;
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      newErrors.email = true;
     if (!wa) newErrors.whatsapp = true;
     if (!age) newErrors.age = true;
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-      newErrors.email = true;
 
     for (const q of questions) {
       if (pillSelections[q.id].size === 0) newErrors[q.id] = true;
@@ -586,7 +664,71 @@ function ScreenRegister({
     }
 
     setShowError(false);
-    onSuccess();
+    setSubmitError(null);
+    setSubmitting(true);
+
+    try {
+      const surveyAnswers = Object.fromEntries(
+        questions.map((q) => [q.id, Array.from(pillSelections[q.id])])
+      );
+
+      const reg = await triggerRegister({
+        name,
+        email,
+        phone: wa,
+        age,
+        surveyAnswers,
+      });
+
+      if (reg.paymentStatus === "success") {
+        onSuccess();
+        return;
+      }
+
+      const order = await triggerCreateOrder({
+        registrationId: reg.registrationId,
+      });
+
+      if (typeof window === "undefined" || !window.Razorpay) {
+        throw new Error("Payment provider not loaded. Please retry in a moment.");
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        const rzp = new window.Razorpay!({
+          key: order.keyId,
+          amount: order.amount,
+          currency: order.currency,
+          name: "MyNextDeveloper",
+          description: "Webinar Registration",
+          order_id: order.orderId,
+          prefill: { name, email, contact: wa },
+          theme: { color: "#229fbd" },
+          handler: async (resp) => {
+            try {
+              const verified = await triggerVerify(resp);
+              if (verified.status === "success") {
+                resolve();
+                onSuccess();
+              } else {
+                reject(new Error("Payment verification failed."));
+              }
+            } catch (err) {
+              reject(err instanceof Error ? err : new Error(String(err)));
+            }
+          },
+          modal: {
+            ondismiss: () => reject(new Error("Payment cancelled.")),
+          },
+        });
+        rzp.open();
+      });
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error ? err.message : "Something went wrong."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -625,6 +767,11 @@ function ScreenRegister({
           Please complete the highlighted fields.
         </div>
       )}
+      {submitError && (
+        <div className="mb-3 rounded-lg border-l-[3px] border-[#e07b00] bg-[#fde8d8] px-3 py-2.5 text-[13px] text-[#8a3a00]">
+          {submitError}
+        </div>
+      )}
 
       <form onSubmit={onSubmit} noValidate>
         <div className="md:grid md:grid-cols-2 md:gap-x-4">
@@ -640,7 +787,8 @@ function ScreenRegister({
             id="rf-email"
             name="email"
             type="email"
-            label="Email (Optional)"
+            label="Email"
+            required
             autoComplete="email"
             hasError={!!errors.email}
           />
@@ -705,12 +853,17 @@ function ScreenRegister({
 
         <button
           type="submit"
-          className="group flex w-full items-center justify-center gap-2 rounded-lg bg-amber px-5 py-4 text-base font-semibold tracking-[0.01em] text-navy shadow-[0_10px_24px_-10px_rgba(255,185,21,0.55)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-10px_rgba(255,185,21,0.65)]"
+          disabled={submitting}
+          className="group flex w-full items-center justify-center gap-2 rounded-lg bg-amber px-5 py-4 text-base font-semibold tracking-[0.01em] text-navy shadow-[0_10px_24px_-10px_rgba(255,185,21,0.55)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-10px_rgba(255,185,21,0.65)] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
         >
-          <span>Complete My Registration</span>
-          <span className="inline-block transition group-hover:translate-x-1">
-            →
+          <span>
+            {submitting ? "Processing…" : "Pay ₹499 & Complete Registration"}
           </span>
+          {!submitting && (
+            <span className="inline-block transition group-hover:translate-x-1">
+              →
+            </span>
+          )}
         </button>
       </form>
     </section>
