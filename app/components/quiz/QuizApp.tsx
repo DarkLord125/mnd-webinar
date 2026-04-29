@@ -117,11 +117,7 @@ export function QuizApp() {
   };
 
   return (
-    <div
-      className={`relative mx-auto w-full max-w-[480px] bg-[#faf7f2] shadow-[0_0_0_1px_rgba(0,0,0,0.03)] ${
-        screen === 4 || screen === 5 ? "" : ""
-      }`}
-    >
+    <div className="relative mx-auto w-full max-w-[480px] bg-[#faf7f2] shadow-[0_0_0_1px_rgba(0,0,0,0.03)] md:max-w-none md:shadow-none">
       {screen !== 4 && screen !== 5 && <QuizNav />}
       <main className="relative">
         {screen === 1 && <ScreenChoose onAnswer={(c) => goTo(c === CORRECT_ANSWER ? 2 : 3)} />}
@@ -145,20 +141,20 @@ export function QuizApp() {
 function QuizNav() {
   return (
     <header
-      className="flex items-center justify-between bg-navy px-4 py-3 text-white"
+      className="flex items-center justify-between bg-navy px-4 py-3 text-white md:px-8 md:py-4 lg:px-12"
       style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}
     >
       <Image
         src="/assets/mnd-logo-white.png"
         alt="MyNextDeveloper"
-        width={130}
-        height={22}
+        width={180}
+        height={30}
         priority
-        className="block h-[22px] w-auto object-contain"
+        className="block h-[22px] w-auto object-contain md:h-[28px]"
       />
-      <div className="inline-flex items-center gap-1.5">
-        <span className="quiz-pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-amber" />
-        <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/55">
+      <div className="inline-flex items-center gap-1.5 md:gap-2">
+        <span className="quiz-pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-amber md:h-2 md:w-2" />
+        <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/55 md:text-[11px]">
           Test yourself
         </span>
       </div>
@@ -180,22 +176,22 @@ function ScreenChoose({ onAnswer }: { onAnswer: (c: "A" | "B") => void }) {
   };
 
   return (
-    <section className="px-5 pb-6 pt-5 sm:px-6">
-      <div className="mb-4">
-        <p className="m-0 mb-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#444443]/70">
+    <section className="px-5 pb-6 pt-5 sm:px-6 md:px-12 md:pt-12 md:pb-16 lg:px-20 lg:pt-16 xl:px-28 2xl:px-40">
+      <div className="mb-4 md:mx-auto md:mb-10 md:max-w-[760px] md:text-center lg:max-w-[860px] lg:mb-12">
+        <p className="m-0 mb-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#444443]/70 md:text-[12px] lg:text-[13px]">
           A quick visual test
         </p>
-        <h1 className="m-0 mb-3 font-serif font-medium leading-[1.08] tracking-[-0.01em] text-balance text-navy text-[clamp(30px,8.2vw,40px)]">
+        <h1 className="m-0 mb-3 font-serif font-medium leading-[1.08] tracking-[-0.01em] text-balance text-navy text-[clamp(30px,8.2vw,40px)] md:mb-4 md:text-[56px] lg:text-[68px] xl:text-[76px]">
           So… which one do you think is{" "}
           <em className="font-medium italic text-teal">AI?</em>
         </h1>
-        <p className="m-0 mb-5 text-[15px] leading-[1.55] text-[#444443]">
+        <p className="m-0 mb-5 text-[15px] leading-[1.55] text-[#444443] md:mb-0 md:text-[18px] lg:text-[20px]">
           Trust your instincts. Look at the skin, the eyes, the light.
         </p>
       </div>
 
       <div
-        className="mb-4 grid grid-cols-2 gap-3"
+        className="mb-4 grid grid-cols-2 gap-3 md:mx-auto md:max-w-[1000px] md:gap-8 lg:max-w-[1200px] lg:gap-10 xl:max-w-[1320px]"
         role="radiogroup"
         aria-label="Choose which image you think is AI"
       >
@@ -223,12 +219,12 @@ function ScreenChoose({ onAnswer }: { onAnswer: (c: "A" | "B") => void }) {
                   className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                 />
               </div>
-              <div className="flex items-center justify-between bg-white px-3.5 py-3">
-                <span className="font-serif text-[22px] font-medium leading-[1.2] tracking-[0.01em] text-navy">
+              <div className="flex items-center justify-between bg-white px-3.5 py-3 md:px-5 md:py-4">
+                <span className="font-serif text-[22px] font-medium leading-[1.2] tracking-[0.01em] text-navy md:text-[26px]">
                   Option {choice}
                 </span>
                 <span
-                  className={`relative h-[22px] w-[22px] flex-shrink-0 rounded-full border-2 transition ${
+                  className={`relative h-[22px] w-[22px] flex-shrink-0 rounded-full border-2 transition md:h-[26px] md:w-[26px] ${
                     isSelected
                       ? "border-amber bg-amber shadow-[0_0_0_4px_rgba(255,185,21,0.18)]"
                       : "border-navy/25 bg-transparent"
@@ -258,63 +254,82 @@ function ScreenResult({
 }) {
   return (
     <section
-      className="px-4 pt-5"
+      className="px-4 pt-5 md:px-12 md:pt-12 lg:px-20 lg:pt-16 xl:px-28 2xl:px-40"
       style={{ paddingBottom: "calc(80px + env(safe-area-inset-bottom, 0px))" }}
     >
-      {variant === 2 ? (
-        <Badge tone="green" label="You got it right" />
-      ) : (
-        <Badge tone="amber" label="Almost — but not quite" />
-      )}
+      <div className="md:mx-auto md:grid md:max-w-[1200px] md:grid-cols-2 md:gap-12 lg:max-w-[1400px] lg:gap-20 xl:max-w-[1500px]">
+        <div className="md:flex md:flex-col md:justify-center">
+          {variant === 2 ? (
+            <Badge tone="green" label="You got it right" />
+          ) : (
+            <Badge tone="amber" label="Almost — but not quite" />
+          )}
 
-      <h1 className="m-0 mb-2.5 font-serif font-medium leading-[1.08] tracking-[-0.01em] text-balance text-navy text-[clamp(26px,6vw,42px)]">
-        {variant === 2 ? (
-          <>
-            Most people miss it.{" "}
-            <em className="font-medium italic text-teal">You didn&apos;t.</em>
-          </>
-        ) : (
-          <>
-            The other image was AI.{" "}
-            <em className="font-medium italic text-teal">
-              Hard to believe, right?
-            </em>
-          </>
-        )}
-      </h1>
+          <h1 className="m-0 mb-2.5 font-serif font-medium leading-[1.08] tracking-[-0.01em] text-balance text-navy text-[clamp(26px,6vw,42px)] md:mb-4 md:text-[48px] lg:text-[60px] xl:text-[68px]">
+            {variant === 2 ? (
+              <>
+                Most people miss it.{" "}
+                <em className="font-medium italic text-teal">
+                  You didn&apos;t.
+                </em>
+              </>
+            ) : (
+              <>
+                The other image was AI.{" "}
+                <em className="font-medium italic text-teal">
+                  Hard to believe, right?
+                </em>
+              </>
+            )}
+          </h1>
 
-      <p className="m-0 mt-2.5 mb-2 px-1 font-serif text-[13px] italic leading-[1.35] tracking-[0.005em] text-balance text-teal sm:text-[17px]">
-        &ldquo;AI is already creating images this real. Come learn how
-        it&apos;s done.&rdquo;
-      </p>
+          <p className="m-0 mt-2.5 mb-2 px-1 font-serif text-[13px] italic leading-[1.35] tracking-[0.005em] text-balance text-teal sm:text-[17px] md:mb-6 md:px-0 md:text-[19px] md:leading-[1.45] lg:text-[21px]">
+            &ldquo;AI is already creating images this real. Come learn how
+            it&apos;s done.&rdquo;
+          </p>
 
-      <AiGallery />
-
-      <InfoGrid />
-
-      <div className="mt-2 w-full text-center">
-        <div className="mb-2.5 inline-flex items-center gap-2 text-xs leading-[1.3] text-[#444443]/85">
-          <span className="quiz-pulse-dot h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber" />
-          <span>Limited spots left</span>
+          <div className="hidden md:block">
+            <ResultCta onJoin={onJoin} />
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={onJoin}
-          className="group flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-amber px-5 py-4 text-[14px] font-semibold tracking-[0.01em] text-navy shadow-[0_10px_24px_-10px_rgba(255,185,21,0.55)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-10px_rgba(255,185,21,0.65)]"
-        >
-          <span>Claim My Spot — Register for Free, Pay Later</span>
-          <span className="inline-block transition group-hover:translate-x-1">
-            →
-          </span>
-        </button>
-        <Link
-          href="/details"
-          className="mt-2.5 block text-center text-xs font-medium text-teal underline underline-offset-[3px] transition hover:text-[#1d8aa4]"
-        >
-          See full details →
-        </Link>
+
+        <div className="md:flex md:flex-col md:justify-center">
+          <AiGallery />
+          <InfoGrid />
+        </div>
+      </div>
+
+      <div className="md:hidden">
+        <ResultCta onJoin={onJoin} />
       </div>
     </section>
+  );
+}
+
+function ResultCta({ onJoin }: { onJoin: () => void }) {
+  return (
+    <div className="mt-2 w-full text-center md:mt-0">
+      <div className="mb-2.5 inline-flex items-center gap-2 text-xs leading-[1.3] text-[#444443]/85">
+        <span className="quiz-pulse-dot h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber" />
+        <span>Limited spots left</span>
+      </div>
+      <button
+        type="button"
+        onClick={onJoin}
+        className="group flex w-full items-center justify-center gap-2 rounded-lg bg-amber px-5 py-4 text-center text-[14px] font-semibold leading-[1.3] tracking-[0.01em] text-navy shadow-[0_10px_24px_-10px_rgba(255,185,21,0.55)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-10px_rgba(255,185,21,0.65)] sm:whitespace-nowrap md:text-[16px] md:py-[18px]"
+      >
+        <span>Claim My Spot — Register for Free, Pay Later</span>
+        <span className="inline-block transition group-hover:translate-x-1">
+          →
+        </span>
+      </button>
+      <Link
+        href="/details"
+        className="mt-2.5 block text-center text-xs font-medium text-teal underline underline-offset-[3px] transition hover:text-[#1d8aa4] md:mt-3 md:text-[13px]"
+      >
+        See full details →
+      </Link>
+    </div>
   );
 }
 
@@ -357,10 +372,10 @@ function AiGallery() {
   }, []);
 
   return (
-    <div className="relative -mx-4 my-3">
+    <div className="relative -mx-4 my-3 md:mx-0 md:my-0 md:mb-4">
       <div
         ref={scrollerRef}
-        className="ai-gallery flex snap-x snap-mandatory flex-row flex-nowrap gap-2.5 overflow-x-auto overflow-y-visible px-4 pb-3.5 pt-1.5"
+        className="ai-gallery flex snap-x snap-mandatory flex-row flex-nowrap gap-2.5 overflow-x-auto overflow-y-visible px-4 pb-3.5 pt-1.5 md:gap-3 md:px-1 md:pb-2"
         role="list"
         aria-label="AI image preview gallery"
       >
@@ -368,7 +383,7 @@ function AiGallery() {
           <div
             key={src}
             role="listitem"
-            className="relative h-[120px] w-[120px] flex-none snap-start overflow-hidden rounded-[10px] bg-gradient-to-br from-[#e2e8ec] via-[#c7d0d6] to-[#a9b8c1] shadow-[0_6px_16px_-10px_rgba(2,48,71,0.25),0_1px_3px_rgba(2,48,71,0.06)]"
+            className="relative h-[120px] w-[120px] flex-none snap-start overflow-hidden rounded-[10px] bg-gradient-to-br from-[#e2e8ec] via-[#c7d0d6] to-[#a9b8c1] shadow-[0_6px_16px_-10px_rgba(2,48,71,0.25),0_1px_3px_rgba(2,48,71,0.06)] md:h-[160px] md:w-[160px] md:rounded-xl lg:h-[180px] lg:w-[180px]"
           >
             <Image
               src={src}
@@ -385,7 +400,7 @@ function AiGallery() {
         ))}
       </div>
       <div
-        className={`pointer-events-none absolute right-0 top-0 h-full w-9 bg-gradient-to-r from-[#faf7f2]/0 to-[#faf7f2] transition-opacity duration-200 ${
+        className={`pointer-events-none absolute right-0 top-0 h-full w-9 bg-gradient-to-r from-[#faf7f2]/0 to-[#faf7f2] transition-opacity duration-200 md:hidden ${
           scrolled ? "opacity-0" : "opacity-100"
         }`}
       />
@@ -413,7 +428,7 @@ function AiGallery() {
 
 function InfoGrid() {
   return (
-    <div className="my-4 grid grid-cols-2 gap-2.5">
+    <div className="my-4 grid grid-cols-2 gap-2.5 md:my-0 md:gap-3">
       <InfoCard
         title="75 Minutes"
         sub="Live Session"
@@ -484,7 +499,7 @@ function InfoCard({
 }) {
   return (
     <div
-      className={`flex flex-col justify-center gap-1 rounded-xl border-l-[3px] border-teal bg-white px-2.5 py-3 shadow-[0_6px_18px_-10px_rgba(2,48,71,0.22),0_1px_3px_rgba(2,48,71,0.05)] ${
+      className={`flex flex-col justify-center gap-1 rounded-xl border-l-[3px] border-teal bg-white px-2.5 py-3 shadow-[0_6px_18px_-10px_rgba(2,48,71,0.22),0_1px_3px_rgba(2,48,71,0.05)] md:gap-1.5 md:px-4 md:py-4 ${
         full ? "col-span-2" : ""
       }`}
     >
@@ -495,14 +510,16 @@ function InfoCard({
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="mb-1 h-[18px] w-[18px] text-teal"
+        className="mb-1 h-[18px] w-[18px] text-teal md:h-5 md:w-5"
       >
         {icon}
       </svg>
-      <div className="text-[13px] font-bold leading-[1.25] tracking-[0.005em] text-navy">
+      <div className="text-[13px] font-bold leading-[1.25] tracking-[0.005em] text-navy md:text-[15px]">
         {title}
       </div>
-      <div className="text-[11px] leading-[1.3] text-[#444443]/85">{sub}</div>
+      <div className="text-[11px] leading-[1.3] text-[#444443]/85 md:text-[12.5px]">
+        {sub}
+      </div>
     </div>
   );
 }
@@ -573,22 +590,22 @@ function ScreenRegister({
   };
 
   return (
-    <section className="bg-[#faf7f2] px-5 pb-7 pt-6 text-ink sm:px-6">
+    <section className="mx-auto bg-[#faf7f2] px-5 pb-7 pt-6 text-ink sm:px-6 md:max-w-[860px] md:px-12 md:pt-12 md:pb-16 lg:max-w-[1000px] lg:px-16 xl:max-w-[1100px]">
       <button
         type="button"
         onClick={onBack}
         aria-label="Go back"
-        className="-ml-1.5 mb-1.5 inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-transparent px-2.5 py-1.5 text-[13px] text-[#444443] transition hover:bg-navy/5 hover:text-navy"
+        className="-ml-1.5 mb-1.5 inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-transparent px-2.5 py-1.5 text-[13px] text-[#444443] transition hover:bg-navy/5 hover:text-navy md:text-sm"
       >
         ← Back
       </button>
 
-      <div className="mb-5">
-        <h1 className="m-0 mb-3 font-serif font-medium leading-[1.08] tracking-[-0.01em] text-navy text-[clamp(32px,9vw,40px)]">
+      <div className="mb-5 md:mb-7">
+        <h1 className="m-0 mb-3 font-serif font-medium leading-[1.08] tracking-[-0.01em] text-navy text-[clamp(32px,9vw,40px)] md:text-[48px] lg:text-[56px]">
           Event{" "}
           <em className="font-medium italic text-teal">Registration</em>
         </h1>
-        <p className="m-0 mb-2.5 text-sm leading-[1.55] text-[#444443]">
+        <p className="m-0 mb-2.5 text-sm leading-[1.55] text-[#444443] md:text-[15px] md:leading-[1.6]">
           This is a live online session by MyNextDeveloper on 17th July, 2026
           from 4:00 PM to 5:15 PM. Join from your phone or laptop, no
           downloads needed. We will teach you how to use AI tools like ChatGPT
@@ -610,40 +627,42 @@ function ScreenRegister({
       )}
 
       <form onSubmit={onSubmit} noValidate>
-        <FloatingInput
-          id="rf-name"
-          name="name"
-          label="Name"
-          required
-          autoComplete="name"
-          hasError={!!errors.name}
-        />
-        <FloatingInput
-          id="rf-email"
-          name="email"
-          type="email"
-          label="Email (Optional)"
-          autoComplete="email"
-          hasError={!!errors.email}
-        />
-        <FloatingInput
-          id="rf-wa"
-          name="whatsapp"
-          type="tel"
-          label="WhatsApp Number"
-          required
-          autoComplete="tel"
-          inputMode="tel"
-          hasError={!!errors.whatsapp}
-        />
-        <FloatingSelect
-          id="rf-age"
-          name="age"
-          label="Age"
-          required
-          options={ageOptions}
-          hasError={!!errors.age}
-        />
+        <div className="md:grid md:grid-cols-2 md:gap-x-4">
+          <FloatingInput
+            id="rf-name"
+            name="name"
+            label="Name"
+            required
+            autoComplete="name"
+            hasError={!!errors.name}
+          />
+          <FloatingInput
+            id="rf-email"
+            name="email"
+            type="email"
+            label="Email (Optional)"
+            autoComplete="email"
+            hasError={!!errors.email}
+          />
+          <FloatingInput
+            id="rf-wa"
+            name="whatsapp"
+            type="tel"
+            label="WhatsApp Number"
+            required
+            autoComplete="tel"
+            inputMode="tel"
+            hasError={!!errors.whatsapp}
+          />
+          <FloatingSelect
+            id="rf-age"
+            name="age"
+            label="Age"
+            required
+            options={ageOptions}
+            hasError={!!errors.age}
+          />
+        </div>
 
         {questions.map((q) => (
           <div
@@ -802,12 +821,12 @@ function FloatingSelect({
 
 function ScreenConfirm() {
   return (
-    <section className="min-h-[calc(100vh-0px)] bg-navy px-6 pb-7 pt-10 text-white">
+    <section className="min-h-screen bg-navy px-6 pb-7 pt-10 text-white md:px-10 md:py-16">
       <div
-        className="flex flex-col items-start gap-[18px]"
+        className="mx-auto flex max-w-[520px] flex-col items-start gap-[18px] md:max-w-[640px] md:gap-6"
         style={{ paddingTop: "12vh" }}
       >
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber shadow-[0_12px_28px_-10px_rgba(255,185,21,0.5)]">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber shadow-[0_12px_28px_-10px_rgba(255,185,21,0.5)] md:h-16 md:w-16">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -815,19 +834,19 @@ function ScreenConfirm() {
             strokeWidth={3}
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="h-7 w-7 text-navy"
+            className="h-7 w-7 text-navy md:h-8 md:w-8"
           >
             <path d="M4 12l5 5L20 6" />
           </svg>
         </div>
-        <h1 className="m-0 whitespace-nowrap font-serif font-medium leading-[1.2] text-white text-[clamp(36px,10vw,48px)]">
+        <h1 className="m-0 whitespace-nowrap font-serif font-medium leading-[1.2] text-white text-[clamp(36px,10vw,48px)] md:text-[64px]">
           You&apos;re <em className="font-medium italic text-amber">in.</em>
         </h1>
-        <p className="m-0 text-[15.5px] leading-[1.6] text-white/80">
+        <p className="m-0 text-[15.5px] leading-[1.6] text-white/80 md:text-[17px]">
           We&apos;ll review your registration and send you the session link 48
           hours before it starts, if you are eligible. See you there.
         </p>
-        <p className="m-0 text-[15.5px] leading-[1.6] text-white/80">
+        <p className="m-0 text-[15.5px] leading-[1.6] text-white/80 md:text-[17px]">
           Join our WhatsApp community for more updates —<br />
           <a
             href={WHATSAPP_COMMUNITY_URL}
