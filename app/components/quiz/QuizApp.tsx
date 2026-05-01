@@ -19,10 +19,10 @@ type Screen = 1 | 2 | 3 | 4;
 const aiPreviews = [
   "/assets/ai-preview-5.jpg",
   "/assets/ai-preview-6.jpg",
-  "/assets/ai-preview-1.jpg",
-  "/assets/ai-preview-2.jpg",
-  "/assets/ai-preview-3.jpg",
-  "/assets/ai-preview-4.jpg",
+  "/assets/ai-preview-1.png",
+  "/assets/ai-preview-2.png",
+  "/assets/ai-preview-3.png",
+  "/assets/ai-preview-4.png",
 ];
 
 type Question = {
@@ -151,6 +151,7 @@ export function QuizApp() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("step") === "register") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setScreen(4);
       setEnteredViaDeepLink(true);
     }
@@ -412,17 +413,29 @@ function Badge({
 
 function AiGallery() {
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const [scrolled, setScrolled] = useState(false);
+  const [atEnd, setAtEnd] = useState(false);
 
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
     const onScroll = () => {
-      if (el.scrollLeft > 8) setScrolled(true);
+      const reachedEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+      setAtEnd(reachedEnd);
     };
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
+
+  const scrollNext = () => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const reachedEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+    if (reachedEnd) {
+      el.scrollTo({ left: 0, behavior: "smooth" });
+    } else {
+      el.scrollBy({ left: el.clientWidth * 0.8, behavior: "smooth" });
+    }
+  };
 
   return (
     <div className="relative -mx-4 my-3 md:mx-0 md:my-0 md:mb-4">
@@ -442,7 +455,8 @@ function AiGallery() {
               src={src}
               alt=""
               fill
-              sizes="120px"
+              sizes="(min-width: 1024px) 180px, (min-width: 768px) 160px, 120px"
+              quality={100}
               loading="lazy"
               className="object-cover"
             />
@@ -454,14 +468,14 @@ function AiGallery() {
       </div>
       <div
         className={`pointer-events-none absolute right-0 top-0 h-full w-9 bg-gradient-to-r from-[#faf7f2]/0 to-[#faf7f2] transition-opacity duration-200 md:hidden ${
-          scrolled ? "opacity-0" : "opacity-100"
+          atEnd ? "opacity-0" : "opacity-100"
         }`}
       />
-      <span
-        className={`quiz-nudge pointer-events-none absolute right-1.5 top-1/2 z-[2] flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-navy/85 text-white shadow-[0_4px_10px_rgba(2,48,71,0.25)] transition-opacity duration-200 ${
-          scrolled ? "opacity-0" : "opacity-100"
-        }`}
-        aria-hidden="true"
+      <button
+        type="button"
+        onClick={scrollNext}
+        aria-label={atEnd ? "Back to start" : "Show more AI images"}
+        className="quiz-nudge absolute right-1.5 top-1/2 z-[2] flex h-7 w-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-navy/85 text-white shadow-[0_4px_10px_rgba(2,48,71,0.25)] transition hover:bg-navy hover:scale-105 md:h-8 md:w-8"
       >
         <svg
           viewBox="0 0 24 24"
@@ -470,11 +484,13 @@ function AiGallery() {
           strokeWidth={2.5}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="h-3.5 w-3.5"
+          className={`h-3.5 w-3.5 transition-transform duration-200 ${
+            atEnd ? "rotate-180" : ""
+          }`}
         >
           <path d="M9 5l7 7-7 7" />
         </svg>
-      </span>
+      </button>
     </div>
   );
 }
