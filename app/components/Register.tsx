@@ -1,7 +1,8 @@
+import Link from "next/link";
 import { LockIcon } from "./icons";
 import { Reveal } from "./Reveal";
 
-const REGISTER_URL = "https://forms.gle/8kxfdsmMwXg9qBkK8";
+const REGISTER_HREF = "/?step=register";
 
 export function Register() {
   return (
@@ -18,17 +19,15 @@ export function Register() {
               across once the session ends.
             </p>
 
-            <a
-              href={REGISTER_URL}
-              target="_blank"
-              rel="noopener"
+            <Link
+              href={REGISTER_HREF}
               className="group block w-full rounded-[14px] bg-amber px-7 py-4 text-[17px] font-bold tracking-[0.005em] text-navy shadow-[0_14px_32px_-12px_rgba(255,185,21,0.6)] transition hover:-translate-y-0.5 hover:bg-amber-hover hover:shadow-[0_20px_40px_-14px_rgba(255,185,21,0.7)]"
             >
               Reserve My Spot for ₹499{" "}
               <span className="ml-1.5 inline-block transition group-hover:translate-x-1">
                 →
               </span>
-            </a>
+            </Link>
 
             <div className="mt-4 inline-flex flex-wrap items-center justify-center gap-2 text-[12.5px] text-white/50">
               <LockIcon className="h-3 w-3 opacity-70" />
