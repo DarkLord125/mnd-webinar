@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  getDb,
-  registrationsCollection,
-} from "@/lib/mongo";
+import { getDb, DBCollection } from "@/lib/mongo";
 import { jsonError } from "@/lib/errors";
 import { parseRegisterPayload } from "@/lib/validation";
 import type { EventRegistration } from "@/lib/types";
@@ -16,7 +13,7 @@ export async function POST(request: Request) {
     const eventId = data.eventId || process.env.EVENT_ID || "default";
 
     const db = await getDb();
-    const col = registrationsCollection(db);
+    const col = db.collection<EventRegistration>(DBCollection.EVENT_REGISTRATIONS);
 
     const now = new Date();
     const doc: EventRegistration = {

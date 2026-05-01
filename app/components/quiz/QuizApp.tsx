@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   useEffect,
   useRef,
@@ -12,10 +13,8 @@ import {
 import useSWRMutation from "swr/mutation";
 
 const CORRECT_ANSWER: "A" | "B" = "A";
-const WHATSAPP_COMMUNITY_URL =
-  "https://chat.whatsapp.com/LLrVLgeEjFYFZxzygp7tyA";
 
-type Screen = 1 | 2 | 3 | 4 | 5;
+type Screen = 1 | 2 | 3 | 4;
 
 const aiPreviews = [
   "/assets/ai-preview-5.jpg",
@@ -144,6 +143,7 @@ async function postJson<T>(url: string, { arg }: { arg: unknown }): Promise<T> {
 }
 
 export function QuizApp() {
+  const router = useRouter();
   const [screen, setScreen] = useState<Screen>(1);
   const [lastResult, setLastResult] = useState<2 | 3>(2);
   const [enteredViaDeepLink, setEnteredViaDeepLink] = useState(false);
@@ -172,7 +172,7 @@ export function QuizApp() {
 
   return (
     <div className="relative mx-auto w-full max-w-[480px] bg-[#faf7f2] shadow-[0_0_0_1px_rgba(0,0,0,0.03)] md:max-w-none md:shadow-none">
-      {screen !== 4 && screen !== 5 && <QuizNav />}
+      {screen !== 4 && <QuizNav />}
       <main className="relative">
         {screen === 1 && <ScreenChoose onAnswer={(c) => goTo(c === CORRECT_ANSWER ? 2 : 3)} />}
         {(screen === 2 || screen === 3) && (
@@ -181,10 +181,9 @@ export function QuizApp() {
         {screen === 4 && (
           <ScreenRegister
             onBack={handleBackFromForm}
-            onSuccess={() => goTo(5)}
+            onSuccess={() => router.push("/confirmed")}
           />
         )}
-        {screen === 5 && <ScreenConfirm />}
       </main>
     </div>
   );
@@ -967,51 +966,6 @@ function FloatingSelect({
         {required && <span className="text-amber"> *</span>}
       </label>
     </div>
-  );
-}
-
-/* ───────── Screen 5: Confirmation ───────── */
-
-function ScreenConfirm() {
-  return (
-    <section className="min-h-screen bg-navy px-6 pb-7 pt-10 text-white md:px-10 md:py-16">
-      <div
-        className="mx-auto flex max-w-[520px] flex-col items-start gap-[18px] md:max-w-[640px] md:gap-6"
-        style={{ paddingTop: "12vh" }}
-      >
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber shadow-[0_12px_28px_-10px_rgba(255,185,21,0.5)] md:h-16 md:w-16">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={3}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-7 w-7 text-navy md:h-8 md:w-8"
-          >
-            <path d="M4 12l5 5L20 6" />
-          </svg>
-        </div>
-        <h1 className="m-0 whitespace-nowrap font-serif font-medium leading-[1.2] text-white text-[clamp(36px,10vw,48px)] md:text-[64px]">
-          You&apos;re <em className="font-medium italic text-amber">in.</em>
-        </h1>
-        <p className="m-0 text-[15.5px] leading-[1.6] text-white/80 md:text-[17px]">
-          We&apos;ll review your registration and send you the session link 48
-          hours before it starts, if you are eligible. See you there.
-        </p>
-        <p className="m-0 text-[15.5px] leading-[1.6] text-white/80 md:text-[17px]">
-          Join our WhatsApp community for more updates —<br />
-          <a
-            href={WHATSAPP_COMMUNITY_URL}
-            target="_blank"
-            rel="noopener"
-            className="break-all text-teal underline underline-offset-[3px] transition hover:text-[#4cb8d3]"
-          >
-            chat.whatsapp.com/LLrVLgeEjFYFZxzygp7tyA
-          </a>
-        </p>
-      </div>
-    </section>
   );
 }
 

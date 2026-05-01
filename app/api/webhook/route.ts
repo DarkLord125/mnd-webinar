@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
-import {
-  getDb,
-  paymentsCollection,
-  registrationsCollection,
-} from "@/lib/mongo";
+import { getDb, DBCollection } from "@/lib/mongo";
 import { verifyWebhookSignature } from "@/lib/razorpay";
 import { appendRegistrationRow } from "@/lib/sheets";
+import type { EventRegistration, Payment } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -57,8 +54,8 @@ export async function POST(request: Request) {
 
   try {
     const db = await getDb();
-    const payCol = paymentsCollection(db);
-    const regCol = registrationsCollection(db);
+    const payCol = db.collection<Payment>(DBCollection.PAYMENTS);
+    const regCol = db.collection<EventRegistration>(DBCollection.EVENT_REGISTRATIONS);
     const now = new Date();
 
     if (event === "payment.captured") {

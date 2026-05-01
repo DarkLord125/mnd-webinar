@@ -1,54 +1,65 @@
 import { MongoClient, type Db } from "mongodb";
 import type { EventRegistration, Payment } from "./types";
 
-declare global {
-  var __mongoClientPromise: Promise<MongoClient> | undefined;
-  var __mongoIndexesReady: Promise<void> | undefined;
+if (!process.env.MONGODB_URI) {
+  throw new Error("Missing MongoDB URI in environment variables");
 }
 
-function getClientPromise(): Promise<MongoClient> {
-  const uri = process.env.MONGODB_URI;
-  if (!uri) throw new Error("MONGODB_URI is not set");
+if (!process.env.DB_NAME) {
+  throw new Error("Missing DB_NAME in environment variables");
+}
 
-  if (!global.__mongoClientPromise) {
-    const client = new MongoClient(uri);
-    global.__mongoClientPromise = client.connect();
-  }
-  return global.__mongoClientPromise;
+const uri = process.env.MONGODB_URI;
+const options = {};
+const dbName = process.env.DB_NAME;
+
+const globalWithMongo = global as typeof globalThis & {
+  _mongoClientPromise?: Promise<MongoClient>;
+  _mongoIndexesReady?: Promise<void>;
+};
+
+if (!globalWithMongo._mongoClientPromise) {
+  const client = new MongoClient(uri, options);
+  globalWithMongo._mongoClientPromise = client.connect();
+}
+
+const clientPromise = globalWithMongo._mongoClientPromise;
+
+export default clientPromise;
+
+// Collections
+export enum DBCollection {
+  EVENT_REGISTRATIONS = "event_registrations",
+  PAYMENTS = "payments",
 }
 
 async function ensureIndexes(db: Db) {
-  if (!global.__mongoIndexesReady) {
-    global.__mongoIndexesReady = (async () => {
+  if (!globalWithMongo._mongoIndexesReady) {
+    globalWithMongo._mongoIndexesReady = (async () => {
       await db
-        .collection<EventRegistration>("event_registrations")
+        .collection<EventRegistration>(DBCollection.EVENT_REGISTRATIONS)
         .createIndex({ email: 1, eventId: 1 }, { unique: true });
       await db
-        .collection<Payment>("payments")
+        .collection<Payment>(DBCollection.PAYMENTS)
         .createIndex({ orderId: 1 }, { unique: true });
       await db
-        .collection<Payment>("payments")
+        .collection<Payment>(DBCollection.PAYMENTS)
         .createIndex({ registrationId: 1 });
     })().catch((err) => {
-      global.__mongoIndexesReady = undefined;
+      globalWithMongo._mongoIndexesReady = undefined;
       throw err;
     });
   }
-  return global.__mongoIndexesReady;
+  return globalWithMongo._mongoIndexesReady;
 }
 
+/**
+ * Get a connected database instance
+ * Use this in all database operations to ensure the client is connected
+ */
 export async function getDb(): Promise<Db> {
-  const client = await getClientPromise();
-  const dbName = process.env.MONGODB_DB || "mnd_webinar";
+  const client = await clientPromise;
   const db = client.db(dbName);
   await ensureIndexes(db);
   return db;
-}
-
-export function registrationsCollection(db: Db) {
-  return db.collection<EventRegistration>("event_registrations");
-}
-
-export function paymentsCollection(db: Db) {
-  return db.collection<Payment>("payments");
 }

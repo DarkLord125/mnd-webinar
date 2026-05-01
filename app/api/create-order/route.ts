@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
-import {
-  getDb,
-  paymentsCollection,
-  registrationsCollection,
-} from "@/lib/mongo";
+import { getDb, DBCollection } from "@/lib/mongo";
 import { ApiError, jsonError } from "@/lib/errors";
 import { getRazorpay } from "@/lib/razorpay";
 import { parseCreateOrderPayload } from "@/lib/validation";
-import type { Payment } from "@/lib/types";
+import type { EventRegistration, Payment } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -22,8 +18,8 @@ export async function POST(request: Request) {
     }
 
     const db = await getDb();
-    const regCol = registrationsCollection(db);
-    const payCol = paymentsCollection(db);
+    const regCol = db.collection<EventRegistration>(DBCollection.EVENT_REGISTRATIONS);
+    const payCol = db.collection<Payment>(DBCollection.PAYMENTS);
 
     const registration = await regCol.findOne({
       _id: new ObjectId(registrationId),
@@ -49,6 +45,8 @@ export async function POST(request: Request) {
         registrationId: registration._id!.toString(),
         eventId: registration.eventId,
         email: registration.email,
+        contact: registration.phone,
+        name: registration.name,
       },
     });
 

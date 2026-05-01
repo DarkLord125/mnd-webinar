@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
-import {
-  getDb,
-  paymentsCollection,
-  registrationsCollection,
-} from "@/lib/mongo";
+import { getDb, DBCollection } from "@/lib/mongo";
 import { ApiError, jsonError } from "@/lib/errors";
 import { verifyPaymentSignature } from "@/lib/razorpay";
 import { parseVerifyPayload } from "@/lib/validation";
 import { appendRegistrationRow } from "@/lib/sheets";
+import type { EventRegistration, Payment } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -18,8 +15,8 @@ export async function POST(request: Request) {
       parseVerifyPayload(body);
 
     const db = await getDb();
-    const payCol = paymentsCollection(db);
-    const regCol = registrationsCollection(db);
+    const payCol = db.collection<Payment>(DBCollection.PAYMENTS);
+    const regCol = db.collection<EventRegistration>(DBCollection.EVENT_REGISTRATIONS);
 
     const payment = await payCol.findOne({ orderId: razorpay_order_id });
     if (!payment) {
@@ -54,7 +51,6 @@ export async function POST(request: Request) {
         $set: {
           status: "success",
           paymentId: razorpay_payment_id,
-          signature: razorpay_signature,
           updatedAt: now,
         },
       }

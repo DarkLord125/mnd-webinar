@@ -35,7 +35,6 @@ export type Payment = {
   eventId: string;
   status: PaymentRecordStatus;
   paymentId?: string;
-  signature?: string;
   createdAt: Date;
   updatedAt: Date;
 };
